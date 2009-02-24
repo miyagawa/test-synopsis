@@ -14,17 +14,22 @@ my $Test = Test::Builder->new;
 sub all_synopsis_ok {
     my $manifest = maniread();
     my @files = grep m!^lib/.*\.p(od|m)$!, keys %$manifest;
+    $Test->plan(tests => 1 * @files);
     synopsis_ok(@files);
 }
 
 sub synopsis_ok {
     my @modules = @_;
-    $Test->plan(tests => 1 * @modules);
 
     for my $module (@modules) {
-        my $code = extract_synopsis($module)
-            or $Test->ok(1, "No SYNOPSIS code"), next;
-        if (eval "sub { $code }") {
+        my($code, @option) = extract_synopsis($module);
+        unless ($code) {
+            $Test->ok(1, "No SYNOPSIS code");
+            next;
+        }
+
+        my $option = join(";", @option);
+        if (eval "$option; sub { $code }") {
             $Test->ok(1, $module);
         } else {
             $Test->ok(0, $@);
@@ -41,7 +46,8 @@ sub extract_synopsis {
         <$fh>;
     };
 
-    return ($content =~ m/^=head1\s+SYNOPSIS(.+?)^=head1/ms)[0];
+    return ($content =~ m/^=head1\s+SYNOPSIS(.+?)^=head1/ms)[0],
+           ($content =~ m/^=for\s+test_synopsis\s+(.+?)^=/msg);
 }
 
 1;
@@ -50,6 +56,8 @@ __END__
 =encoding utf-8
 
 =for stopwords Goro blogged
+
+=for test_synopsis $main::for_checked=1
 
 =head1 NAME
 
@@ -92,6 +100,37 @@ An user of your module would try copy-paste this synopsis code and
 find that this code doesn't compile because there's a typo in your
 variable name I<$tempalte>. Test::Synopsis will catch that error
 before you ship it.
+
+=head1 VARIABLE DECLARATIONS
+
+Sometimes you might want to put some undeclared variables in your
+synopsis, like:
+
+  =head1 SYNOPSIS
+    
+    use Data::Dumper::Names;
+    print Dumper($scalar, \@array, \%hash);
+
+This assumes these variables like I<$scalar> are defined elsewhere in
+module user's code, but Test::Synopsis, by default, will complain that
+these variables are not declared:
+
+    Global symbol "$scalar" requires explicit package name at ...
+
+In this case, you can add the following POD sequence elsewhere in your POD:
+
+  =for test_synopsis
+  no strict 'vars'
+
+Or more explicitly,
+
+  =for test_synopsis
+  my($scalar, @array, %hash);
+
+Test::Synopsis will find these C<=for> blocks and these statements are
+prepended before your SYNOPSIS code when being evaluated, so those
+variable name errors will go away, without adding unnecessary bits in
+SYNOPSIS which might confuse users.
 
 =head1 AUTHOR
 
