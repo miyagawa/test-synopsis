@@ -49,11 +49,11 @@ __END__
 
 =encoding utf-8
 
-=for stopwords
+=for stopwords Goro blogged
 
 =head1 NAME
 
-Test::Synopsis -
+Test::Synopsis - Test your SYNOPSIS code
 
 =head1 SYNOPSIS
 
