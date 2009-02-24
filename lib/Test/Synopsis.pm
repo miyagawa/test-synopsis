@@ -1,7 +1,7 @@
 package Test::Synopsis;
 use strict;
 use 5.008_001;
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use base qw( Exporter );
 our @EXPORT = qw( synopsis_ok all_synopsis_ok );
