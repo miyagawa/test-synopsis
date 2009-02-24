@@ -29,12 +29,19 @@ sub synopsis_ok {
         }
 
         my $option = join(";", @option);
-        if (eval "$option; sub { $code }") {
+        my $test   = "$option; sub { $code }";
+        if (_compile($test)) {
             $Test->ok(1, $module);
         } else {
             $Test->ok(0, $@);
         }
     }
+}
+
+sub _compile {
+    package
+        Test::Synopsis::Sandbox;
+    eval $_[0];
 }
 
 sub extract_synopsis {
@@ -80,6 +87,9 @@ Test::Synopsis - Test your SYNOPSIS code
 Test::Synopsis is an (author) test module to find .pm or .pod files
 under your I<lib> directory and then make sure the example snippet
 code in your I<SYNOPSIS> section passes the perl compile check.
+
+Note that this module only checks the perl syntax (by wrapping the
+code with C<sub>) and doesn't actually run the code.
 
 Suppose you have the following POD in your module.
 

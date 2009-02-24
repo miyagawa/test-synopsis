@@ -1,4 +1,8 @@
 Revision history for Perl extension Test::Synopsis
 
+0.02  Tue Feb 24 12:22:03 PST 2009
+        - Added more docs.
+        - eval the code in a more separate sandbox so that variables in Test::Synopsis won't affect.
+
 0.01  Tue Feb 24 00:21:02 2009
         - original version
