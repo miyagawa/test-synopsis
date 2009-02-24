@@ -147,6 +147,6 @@ it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-L<Test::Pod>, L<Test::UseAllModules>
+L<Test::Pod>, L<Test::UseAllModules>, L<Test::Inline>, L<Test::Snippet>
 
 =cut
