@@ -73,6 +73,26 @@ Test::Synopsis is an (author) test module to find .pm or .pod files
 under your I<lib> directory and then make sure the example snippet
 code in your I<SYNOPSIS> section passes the perl compile check.
 
+Suppose you have the following POD in your module.
+
+  =head1 NAME
+  
+  Awesome::Template - My awesome template
+  
+  =head1 SYNOPSIS
+    
+    use Awesome::Template;
+    
+    my $template = Awesome::Template->new;
+    $tempalte->render("template.at");
+  
+  =head1 DESCRIPTION
+
+An user of your module would try copy-paste this synopsis code and
+find that this code doesn't compile because there's a typo in your
+variable name I<$tempalte>. Test::Synopsis will catch that error
+before you ship it.
+
 =head1 AUTHOR
 
 Tatsuhiko Miyagawa E<lt>miyagawa@bulknews.netE<gt>
