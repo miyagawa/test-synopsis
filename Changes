@@ -1,5 +1,9 @@
 Revision history for Perl extension Test::Synopsis
 
+0.03  Wed Feb 25 20:48:54 PST 2009
+        - Added file name and line number to eval context
+          (Thanks to Daisuke Maki and Goro Fuji)
+
 0.02  Tue Feb 24 12:22:03 PST 2009
         - Added more docs.
         - eval the code in a more separate sandbox so that variables in Test::Synopsis won't affect.
