@@ -9,12 +9,15 @@ our @EXPORT = qw( synopsis_ok all_synopsis_ok );
 use ExtUtils::Manifest qw( maniread );
 
 use Test::Builder;
-my $Test = Test::Builder->new;
+{
+    my $Test = Test::Builder->new;
+    sub tester { $Test }
+}
 
 sub all_synopsis_ok {
     my $manifest = maniread();
     my @files = grep m!^lib/.*\.p(od|m)$!, keys %$manifest;
-    $Test->plan(tests => 1 * @files);
+    tester->plan(tests => 1 * @files);
     synopsis_ok(@files);
 }
 
@@ -24,15 +27,15 @@ sub synopsis_ok {
     for my $module (@modules) {
         my($code, $line, @option) = extract_synopsis($module);
         unless ($code) {
-            $Test->ok(1, "No SYNOPSIS code");
+            tester->ok(1, "No SYNOPSIS code");
             next;
         }
 
         my $option = join(";", @option);
         my $test   = qq(#line $line "$module"\n$option; sub { $code });
         my $ok     = _compile($test);
-        $Test->ok($ok, $module);
-        $Test->diag($@) unless $ok;
+        tester->ok($ok, $module);
+        tester->diag($@) unless $ok;
     }
 }
 
