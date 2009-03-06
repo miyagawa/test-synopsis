@@ -1,5 +1,8 @@
 Revision history for Perl extension Test::Synopsis
 
+0.04  Thu Mar  5 17:19:13 PST 2009
+        - Fixed a doc bug where all_synopsis_ok() is taking a directory which it doesn't.
+
 0.03  Wed Feb 25 20:48:54 PST 2009
         - Added file name and line number to eval context
           (Thanks to Daisuke Maki and Goro Fuji)
