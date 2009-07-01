@@ -3,21 +3,15 @@ use strict;
 use 5.008_001;
 our $VERSION = '0.04';
 
-use base qw( Exporter );
+use base qw( Test::Builder::Module );
 our @EXPORT = qw( synopsis_ok all_synopsis_ok );
 
 use ExtUtils::Manifest qw( maniread );
 
-use Test::Builder;
-{
-    my $Test = Test::Builder->new;
-    sub tester { $Test }
-}
-
 sub all_synopsis_ok {
     my $manifest = maniread();
     my @files = grep m!^lib/.*\.p(od|m)$!, keys %$manifest;
-    tester->plan(tests => 1 * @files);
+    __PACKAGE__->builder->plan(tests => 1 * @files);
     synopsis_ok(@files);
 }
 
@@ -27,22 +21,22 @@ sub synopsis_ok {
     for my $module (@modules) {
         my($code, $line, @option) = extract_synopsis($module);
         unless ($code) {
-            tester->ok(1, "No SYNOPSIS code");
+            __PACKAGE__->builder->ok(1, "No SYNOPSIS code");
             next;
         }
 
         my $option = join(";", @option);
         my $test   = qq(#line $line "$module"\n$option; sub { $code });
         my $ok     = _compile($test);
-        tester->ok($ok, $module);
-        tester->diag($@) unless $ok;
+        __PACKAGE__->builder->ok($ok, $module);
+        __PACKAGE__->builder->diag($@) unless $ok;
     }
 }
 
 sub _compile {
     package
         Test::Synopsis::Sandbox;
-    eval $_[0];
+    eval $_[0]; ## no critic
 }
 
 sub extract_synopsis {
