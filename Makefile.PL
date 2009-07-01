@@ -6,4 +6,5 @@ requires 'Test::Builder';
 use_test_base;
 auto_include_deps;
 author_tests('xt');
+auto_set_repository;
 WriteAll;
