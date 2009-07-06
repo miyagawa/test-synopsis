@@ -1,5 +1,8 @@
 Revision history for Perl extension Test::Synopsis
 
+0.06  Mon Jul  6 11:07:50 PDT 2009
+        - Reworked NoPod tests so it doesn't sit in lib/ and won't be installed.
+
 0.05  Mon Jul  6 10:55:02 PDT 2009
         - use Test::Builder::Module to support forward compatibilities with Test::More
         - Don't warn in tr/// if there is no pod at all.
