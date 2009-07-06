@@ -5,7 +5,7 @@ Revision history for Perl extension Test::Synopsis
 
 0.05  Mon Jul  6 10:55:02 PDT 2009
         - use Test::Builder::Module to support forward compatibilities with Test::More
-        - Don't warn in tr/// if there is no pod at all.
+        - Don't warn in tr/// if there is no pod at all. (Thanks to hanekomu)
 
 0.04  Thu Mar  5 17:19:13 PST 2009
         - Fixed a doc bug where all_synopsis_ok() is taking a directory which it doesn't.
