@@ -19,13 +19,14 @@ inc/Test/Builder.pm
 inc/Test/Builder/Module.pm
 inc/Test/More.pm
 lib/Test/Synopsis.pm
-lib/Test/Synopsis/__TestBait_NoPod.pm
 Makefile.PL
 MANIFEST			This list of files
 META.yml
 README
 t/00_compile.t
 t/for.t
+t/lib/NoPod.pm
+t/nopod.t
 t/synopsis.t
 xt/perlcritic.t
 xt/pod.t
