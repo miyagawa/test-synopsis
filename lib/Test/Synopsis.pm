@@ -1,7 +1,7 @@
 package Test::Synopsis;
 use strict;
 use 5.008_001;
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use base qw( Test::Builder::Module );
 our @EXPORT = qw( synopsis_ok all_synopsis_ok );
@@ -49,7 +49,7 @@ sub extract_synopsis {
     };
 
     my $code = ($content =~ m/^=head1\s+SYNOPSIS(.+?)^=head1/ms)[0];
-    my $line = $` =~ tr/\n/\n/;
+    my $line = ($` || '') =~ tr/\n/\n/;
 
     return $code, $line-1, ($content =~ m/^=for\s+test_synopsis\s+(.+?)^=/msg);
 }

@@ -18,6 +18,7 @@ inc/Test/Builder.pm
 inc/Test/Builder/Module.pm
 inc/Test/More.pm
 lib/Test/Synopsis.pm
+lib/Test/Synopsis/__TestBait_NoPod.pm
 Makefile.PL
 MANIFEST			This list of files
 META.yml
