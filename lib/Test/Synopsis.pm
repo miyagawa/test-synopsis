@@ -19,17 +19,21 @@ sub synopsis_ok {
     my @modules = @_;
 
     for my $module (@modules) {
-        my($code, $line, @option) = extract_synopsis($module);
-        unless ($code) {
+        my($codes, $lines, @option) = extract_synopsis($module);
+        unless ($codes) {
             __PACKAGE__->builder->ok(1, "No SYNOPSIS code");
             next;
         }
 
-        my $option = join(";", @option);
-        my $test   = qq(#line $line "$module"\n$option; sub { $code });
-        my $ok     = _compile($test);
-        __PACKAGE__->builder->ok($ok, $module);
-        __PACKAGE__->builder->diag($@) unless $ok;
+        my $index = 0;
+        foreach my $code (@$codes) {
+            my $option = join(";", @option);
+            my $test   = qq(#line $lines->[$index] "$module"\n$option; sub { $code });
+            my $ok     = _compile($test);
+            __PACKAGE__->builder->ok($ok, $module);
+            __PACKAGE__->builder->diag($@) unless $ok;
+            $index++;
+        }
     }
 }
 
@@ -49,9 +53,57 @@ sub extract_synopsis {
     };
 
     my $code = ($content =~ m/^=head1\s+SYNOPSIS(.+?)^=head1/ms)[0];
-    my $line = ($` || '') =~ tr/\n/\n/;
+    return unless defined($code);
 
-    return $code, $line-1, ($content =~ m/^=for\s+test_synopsis\s+(.+?)^=/msg);
+    my $line = ($` || '') =~ tr/\n/\n/;
+    my ( $codes, $lines ) = _extract_each_synopsis( $code, $line );
+
+    my $first_code = $codes->[0];
+    if ( scalar(@$lines) == 1 && !( $first_code =~ m/^=for\s+test_synopsis_comment_begin\n.+?^=for\s+test_synopsis_comment_end\n/msg ) ) {
+        $lines->[0] -= 2;
+    }
+
+    _remove_comments($codes);
+
+    return $codes, $lines, ($content =~ m/^=for\s+test_synopsis\s+(.+?)^=/msg);
+}
+
+sub _extract_each_synopsis {
+    my ( $code, $line ) = @_;
+
+    my ( @lines, @codes );
+    my $line_locally = 1;
+    while (1) {
+        push @lines, ( $line + $line_locally );
+        if ( my ( $this_code, $next_code ) = $code =~ m/(.+?)^=for\s+test_synopsis_divide(.+)/ms ) {
+            $line_locally += ( $this_code =~ tr/\n/\n/ );
+            push @codes, $this_code;
+            $code = $next_code;
+        }
+        else {
+            push @codes, $code;
+            last;
+        }
+    }
+
+    return \@codes, \@lines;
+}
+
+sub _remove_comments {
+    my $codes = shift;
+
+    foreach my $code (@$codes) {
+        my @comments = $code =~ m/^=for\s+test_synopsis_comment_begin\n(.+?)^=for\s+test_synopsis_comment_end\n/msg;
+        my $newline_count = 1;
+        foreach my $comment (@comments) {
+            $newline_count += $comment =~ tr/\n/\n/;
+        }
+        my $newline = "\n" x $newline_count;
+        $code =~ s/^=for\s+test_synopsis_comment_begin.+?^=for\s+test_synopsis_comment_end/$newline/msg;
+        $code =~ s/^\S.*$//mg;
+    }
+
+    return $codes;
 }
 
 1;
@@ -91,16 +143,16 @@ code with C<sub>) and doesn't actually run the code.
 Suppose you have the following POD in your module.
 
   =head1 NAME
-  
+
   Awesome::Template - My awesome template
-  
+
   =head1 SYNOPSIS
-    
+
     use Awesome::Template;
-    
+
     my $template = Awesome::Template->new;
     $tempalte->render("template.at");
-  
+
   =head1 DESCRIPTION
 
 An user of your module would try copy-paste this synopsis code and
@@ -114,7 +166,7 @@ Sometimes you might want to put some undeclared variables in your
 synopsis, like:
 
   =head1 SYNOPSIS
-    
+
     use Data::Dumper::Names;
     print Dumper($scalar, \@array, \%hash);
 
