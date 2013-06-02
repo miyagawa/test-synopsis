@@ -11,7 +11,10 @@ use ExtUtils::Manifest qw( maniread );
 sub all_synopsis_ok {
     my $manifest = maniread();
     my @files = grep m!^lib/.*\.p(od|m)$!, keys %$manifest;
-    __PACKAGE__->builder->plan(tests => 1 * @files);
+    __PACKAGE__->builder->plan(@files
+        ? (tests => 1 * @files)
+        : (skip_all => 'No files in lib to test')
+    );
     synopsis_ok(@files);
 }
 
