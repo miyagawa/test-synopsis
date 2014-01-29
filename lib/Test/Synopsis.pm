@@ -89,7 +89,8 @@ under your I<lib> directory and then make sure the example snippet
 code in your I<SYNOPSIS> section passes the perl compile check.
 
 Note that this module only checks the perl syntax (by wrapping the
-code with C<sub>) and doesn't actually run the code.
+code with C<sub>) and doesn't actually run the code, B<UNLESS>
+that code is a C<BEGIN {}> block or a C<use> statement.
 
 Suppose you have the following POD in your module.
 
