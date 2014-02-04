@@ -27,7 +27,7 @@ sub synopsis_ok {
     my @modules = @_;
 
     for my $module (@modules) {
-        my($code, $line, @option) = extract_synopsis($module);
+        my($code, $line, @option) = _extract_synopsis($module);
         unless ($code) {
             __PACKAGE__->builder->ok(1, "No SYNOPSIS code");
             next;
@@ -52,7 +52,7 @@ sub _compile {
     eval $_[0]; ## no critic
 }
 
-sub extract_synopsis {
+sub _extract_synopsis {
     my $file = shift;
 
     my $content = do {
@@ -80,8 +80,6 @@ __END__
 =encoding utf-8
 
 =for stopwords Goro blogged Znet Zoffix
-
-=for Pod::Coverage extract_synopsis  synopsis_ok
 
 =for test_synopsis $main::for_checked=1
 
@@ -189,6 +187,15 @@ this test module uses to make SYNOPSIS code checking possible.
 
 B<Note:> you will likely have to remove the C<#> and a space at the start
 of each line (C<perl -pi -e 's/^#\s//;' TEMP_FILE_WITH_CODE>)
+
+=head2 C<synopsis_ok>
+
+  use Test::More tests => 1;
+  use Test::Synopsis;
+  synopsis_ok("t/lib/NoPod.pm");
+
+Lets you test a single file. B<Note:> you must setup your own plan if
+you use this subroutine (e.g. with C<use Test::More tests => 1;>)
 
 =head1 CAVEATS
 
