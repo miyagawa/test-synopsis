@@ -20,11 +20,11 @@ our $VERSION = '0.05';
 Print some foos:
 
     print "Foos!\n";
-    
+
 Blarg away:
-    
+
     BLARGHS();
-    
+
 MOAR BLARGHS!
 
 =head1 DESCRIPTION

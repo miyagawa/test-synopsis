@@ -18,9 +18,9 @@ our $VERSION = '0.05';
 =head1 SYNOPSIS
 
     print "Foos!\n";
-    
+
     __END__
-    
+
     BLARGHS!
 
 =head1 DESCRIPTION

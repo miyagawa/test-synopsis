@@ -1,6 +1,7 @@
 package Test::Synopsis;
 
 use strict;
+use warnings;
 use 5.008_001;
 
 # VERSION
@@ -53,7 +54,7 @@ sub extract_synopsis {
         <$fh>;
     };
 
-    my $code = ($content =~ m/^=head1\s+SYNOPSIS(.+?)^=head1/ms)[0];
+    my $code = ($content =~ m/^=head1\s+SYNOPSIS(.+?)^=head1/ms)[0] || '';
     my $line = ($` || '') =~ tr/\n/\n/;
 
     # unindented text isn't code; get rid of it. Leave newlines where
@@ -71,7 +72,9 @@ __END__
 
 =encoding utf-8
 
-=for stopwords Goro blogged
+=for Pod::Coverage all_synopsis_ok  extract_synopsis  synopsis_ok
+
+=for stopwords Goro blogged Znet Zoffix
 
 =for test_synopsis $main::for_checked=1
 

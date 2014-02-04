@@ -1,6 +1,6 @@
 Revision history for Perl extension Test::Synopsis
 
-0.07  Tue Feb  4 19:00:00 PDT 2009
+0.07  2014-02-04
 
         [Changes by ZOFFIX]
 
@@ -34,23 +34,23 @@ Revision history for Perl extension Test::Synopsis
         - Fixed RT#51535 (show failing code on error)
             https://rt.cpan.org/Ticket/Display.html?id=51535
 
-0.06  Mon Jul  6 11:07:50 PDT 2009
+0.06  2009-06-06 11:07:50 PDT 2009
         - Reworked NoPod tests so it doesn't sit in lib/ and won't be installed.
 
-0.05  Mon Jul  6 10:55:02 PDT 2009
+0.05  2009-06-06 10:55:02 PDT 2009
         - use Test::Builder::Module to support forward compatibilities with Test::More
         - Don't warn in tr/// if there is no pod at all. (Thanks to hanekomu)
 
-0.04  Thu Mar  5 17:19:13 PST 2009
+0.04  2009-03-05 17:19:13 PST 2009
         - Fixed a doc bug where all_synopsis_ok() is taking a directory which it doesn't.
 
-0.03  Wed Feb 25 20:48:54 PST 2009
+0.03  2009-02-25 20:48:54 PST 2009
         - Added file name and line number to eval context
           (Thanks to Daisuke Maki and Goro Fuji)
 
-0.02  Tue Feb 24 12:22:03 PST 2009
+0.02  2009-02-24 12:22:03 PST
         - Added more docs.
         - eval the code in a more separate sandbox so that variables in Test::Synopsis won't affect.
 
-0.01  Tue Feb 24 00:21:02 2009
+0.01  2009-02-24 00:21:02 PST
         - original version
