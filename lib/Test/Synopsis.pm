@@ -10,7 +10,7 @@ use base qw( Test::Builder::Module );
 our @EXPORT = qw( synopsis_ok all_synopsis_ok );
 
 use ExtUtils::Manifest qw( maniread );
-my %ARGS;
+my %ARGS = ( dump_all_code_on_error => 1 ); ### REMOVE THIS FOR PRODUCTION!!!
 sub all_synopsis_ok {
     %ARGS = @_;
 
@@ -36,7 +36,7 @@ sub synopsis_ok {
         my $option = join(";", @option);
         my $test   = qq(#line $line "$module"\n$option; sub { $code });
         my $ok     = _compile($test);
-        print "\n\n\nFoos!!!!!\n\n\n";
+
         __PACKAGE__->builder->ok($ok, $module);
         __PACKAGE__->builder->diag(
             $ARGS{dump_all_code_on_error}
@@ -55,23 +55,84 @@ sub _compile {
 sub _extract_synopsis {
     my $file = shift;
 
-    my $content = do {
-        local $/;
-        open my $fh, "<", $file or die "$file: $!";
-        <$fh>;
-    };
-
-    my $code = ($content =~ m/^=head1\s+SYNOPSIS(.+?)^=head1/ms)[0] || '';
-    my $line = ($` || '') =~ tr/\n/\n/;
-
-    # unindented text isn't code; get rid of it. Leave newlines where
-    # they are, so the reported line numbers of the errors are correct.
-    $code =~ s/^\S+.+$//mg;
+    my $parser = Test::Synopsis::Parser->new;
+    $parser->parse_from_file ($file);
 
     # don't want __END__ blocks in SYNOPSIS chopping our '}' in wrapper sub
-    $code =~ s/(?=__END__\s*$)/}\n/m;
+    $parser->{'test_synopsis'} = ''
+      unless defined $parser->{'test_synopsis'};
+    $parser->{'test_synopsis'} =~ s/(?=__END__\s*$)/}\n/m;
 
-    return $code, $line-1, ($content =~ m/^=for\s+test_synopsis\s+(.+?)^=/msg);
+    return (
+      $parser->{'test_synopsis'},
+      $parser->{'test_synopsis_linenum'},
+      @{ $parser->{'test_synopsis_options'} }
+    );
+}
+
+package
+  Test::Synopsis::Parser; # on new line to avoid indexing
+
+### Parser patch by Kevin Ryde
+
+use base 'Pod::Parser';
+sub new {
+    my $class = shift;
+    return $class->SUPER::new(
+      @_, within_begin => '', test_synopsis_options => []
+    );
+}
+
+sub command {
+    my $self = shift;
+    my ($command, $text, $linenum, $paraobj) = @_;
+    ## print "command: '$command' -- '$text'\n";
+
+    if ($command eq 'for') {
+        if ($text =~ /^test_synopsis\s+(.*)/s) {
+            push @{$self->{'test_synopsis_options'}}, $1;
+        }
+    } elsif ($command eq 'begin') {
+        $self->{'within_begin'} = $text;
+    } elsif ($command eq 'end') {
+        $self->{'within_begin'} = '';
+    } elsif ($command eq 'pod') {
+        # resuming pod, retain begin/end/synopsis state
+    } else {
+        # Synopsis is "=head1 SYNOPSIS" through to next command other than
+        # the above "=for", "=begin", "=end", "=pod".  This means
+        #     * "=for" directives for other programs are skipped
+        #       (eg. HTML::Scrubber)
+        #     * "=begin" to "=end" for other program are skipped
+        #       (eg. Date::Simple)
+        #     * "=cut" to "=pod" actual code is skipped (perhaps unlikely in
+        #       practice)
+        #
+        # Could think about not stopping at "=head2" etc subsections of a
+        # synopsis, but a synopsis with subsections usually means different
+        # sample bits meant for different places and so probably won't
+        # actually run.
+        #
+        $self->{'within_synopsis'}
+          = ($command eq 'head1' && $text =~ /^SYNOPSIS\s*$/);
+    }
+    return '';
+}
+
+sub verbatim {
+    my ($self, $text, $linenum, $paraobj) = @_;
+    if ($self->{'within_begin'} =~ /^test_synopsis\b/) {
+        push @{$self->{'test_synopsis_options'}}, $text;
+
+    } elsif ($self->{'within_synopsis'} && ! $self->{'within_begin'}) {
+        $self->{'test_synopsis_linenum'} ||= $linenum; # first occurance
+        $self->{'test_synopsis'} .= $text;
+    }
+    return '';
+}
+sub textblock {
+    # ignore text paragraphs, only take "verbatim" blocks to be code
+    return '';
 }
 
 1;
@@ -218,10 +279,6 @@ L<https://github.com/zoffixznet/Test-Synopsis/issues>
 If you can't access GitHub, you can email your request
 to C<bug-Test-Synopsis at rt.cpan.org>
 
-=head1 MAINTAINER
-
-Zoffix Znet <cpan (at) zoffix.com>
-
 =head1 AUTHOR
 
 Tatsuhiko Miyagawa E<lt>miyagawa@bulknews.netE<gt>
@@ -229,6 +286,24 @@ Tatsuhiko Miyagawa E<lt>miyagawa@bulknews.netE<gt>
 Goro Fuji blogged about the original idea at
 L<http://d.hatena.ne.jp/gfx/20090224/1235449381> based on the testing
 code taken from L<Test::Weaken>.
+
+=head1 MAINTAINER
+
+Zoffix Znet <cpan (at) zoffix.com>
+
+=head1 CONTRIBUTORS
+
+=over 4
+
+=item Kevin Ryde (L<KRYDE|https://metacpan.org/author/KRYDE>)
+
+=item Marcel Grünauer (L<MARCEL|https://metacpan.org/author/MARCEL>)
+
+=item Mike Doherty (L<DOHERTY|https://metacpan.org/author/DOHERTY>)
+
+=item Zoffix Znet (L<ZOFFIX|https://metacpan.org/author/ZOFFIX>)
+
+=back
 
 =head1 LICENSE
 

@@ -9,6 +9,6 @@ package Test::Synopsis::__TestBait_NoPod;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+# VERSION
 
 1;

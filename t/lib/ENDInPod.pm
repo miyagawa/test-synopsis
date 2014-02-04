@@ -9,13 +9,15 @@ package Test::Synopsis::__TestBait_ENDinPod;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+# VERSION
 
 1;
 
 =pod
 
 =head1 SYNOPSIS
+
+Testing stuff:
 
     print "Foos!\n";
 
