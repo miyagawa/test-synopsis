@@ -190,6 +190,10 @@ code taken from L<Test::Weaken>.
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
+=head1 COPYRIGHT
+
+This library is Copyright (c) Tatsuhiko Miyagawa
+
 =head1 SEE ALSO
 
 L<Test::Pod>, L<Test::UseAllModules>, L<Test::Inline>
