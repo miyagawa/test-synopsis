@@ -10,8 +10,10 @@ use base qw( Test::Builder::Module );
 our @EXPORT = qw( synopsis_ok all_synopsis_ok );
 
 use ExtUtils::Manifest qw( maniread );
-
+my %ARGS;
 sub all_synopsis_ok {
+    %ARGS = @_;
+
     my $manifest = maniread();
     my @files = grep m!^lib/.*\.p(od|m)$!, keys %$manifest;
     __PACKAGE__->builder->plan(@files
@@ -34,8 +36,13 @@ sub synopsis_ok {
         my $option = join(";", @option);
         my $test   = qq(#line $line "$module"\n$option; sub { $code });
         my $ok     = _compile($test);
+        print "\n\n\nFoos!!!!!\n\n\n";
         __PACKAGE__->builder->ok($ok, $module);
-        __PACKAGE__->builder->diag($@) unless $ok;
+        __PACKAGE__->builder->diag(
+            $ARGS{dump_all_code_on_error}
+            ? "$@\nEVALED CODE:\n$test"
+            : $@
+          ) unless $ok;
     }
 }
 
@@ -72,9 +79,9 @@ __END__
 
 =encoding utf-8
 
-=for Pod::Coverage all_synopsis_ok  extract_synopsis  synopsis_ok
-
 =for stopwords Goro blogged Znet Zoffix
+
+=for Pod::Coverage extract_synopsis  synopsis_ok
 
 =for test_synopsis $main::for_checked=1
 
@@ -155,10 +162,41 @@ prepended before your SYNOPSIS code when being evaluated, so those
 variable name errors will go away, without adding unnecessary bits in
 SYNOPSIS which might confuse users.
 
+=head1 EXPORTED SUBROUTINES
+
+=head2 C<all_synopsis_ok>
+
+  all_synopsis_ok();
+
+  all_synopsis_ok( dump_all_code_on_error => 1 );
+
+Checks the SYNOPSIS code in all your modules. Takes B<optional>
+arguments as key/value pairs. Possible arguments are as follows:
+
+=head3 C<dump_all_code_on_error>
+
+  all_synopsis_ok( dump_all_code_on_error => 1 );
+
+Takes true or false values as a value. B<Defaults to:> false. When
+set to a true value, if an error is discovered in the SYNOPSIS code,
+the test will dump the entire snippet of code it tried to test. Use this
+if you want to copy/paste and play around with the code until the error
+is fixed.
+
+The dumped code will include any of the C<=for> code you specified (see
+L<VARIABLE DECLARATIONS> section above) as well as a few internal bits
+this test module uses to make SYNOPSIS code checking possible.
+
+B<Note:> you will likely have to remove the C<#> and a space at the start
+of each line (C<perl -pi -e 's/^#\s//;' TEMP_FILE_WITH_CODE>)
+
 =head1 CAVEATS
 
 This module will not check code past the C<__END__> token, if one is
 present in the SYNOPSIS code.
+
+This module will execute any code you specify in the C<BEGIN {}> blocks
+in the SYNOPSIS.
 
 =head1 REPOSITORY
 
