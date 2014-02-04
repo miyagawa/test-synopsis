@@ -85,7 +85,7 @@ sub new {
 
 sub command {
     my $self = shift;
-    my ($command, $text, $linenum, $paraobj) = @_;
+    my ($command, $text) = @_;
     ## print "command: '$command' -- '$text'\n";
 
     if ($command eq 'for') {
@@ -120,11 +120,11 @@ sub command {
 }
 
 sub verbatim {
-    my ($self, $text, $linenum, $paraobj) = @_;
-    if ($self->{'within_begin'} =~ /^test_synopsis\b/) {
+    my ( $self, $text, $linenum ) = @_;
+    if ( $self->{'within_begin'} =~ /^test_synopsis\b/ ) {
         push @{$self->{'test_synopsis_options'}}, $text;
 
-    } elsif ($self->{'within_synopsis'} && ! $self->{'within_begin'}) {
+    } elsif ( $self->{'within_synopsis'} && ! $self->{'within_begin'} ) {
         $self->{'test_synopsis_linenum'} ||= $linenum; # first occurance
         $self->{'test_synopsis'} .= $text;
     }
@@ -140,7 +140,7 @@ __END__
 
 =encoding utf-8
 
-=for stopwords Goro blogged Znet Zoffix
+=for stopwords Goro blogged Znet Zoffix DOHERTY Doherty KRYDE Ryde ZOFFIX Gr nauer Grünauer pm
 
 =for test_synopsis $main::for_checked=1
 
