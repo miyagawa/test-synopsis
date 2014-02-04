@@ -54,8 +54,12 @@ sub extract_synopsis {
     my $code = ($content =~ m/^=head1\s+SYNOPSIS(.+?)^=head1/ms)[0];
     my $line = ($` || '') =~ tr/\n/\n/;
 
+    # unindented text isn't code; get rid of it. Leave newlines where
+    # they are, so the reported line numbers of the errors are correct.
+    $code =~ s/^\S+.+$//mg;
+
     # don't want __END__ blocks in SYNOPSIS chopping our '}' in wrapper sub
-    $code =~ s/(?=[;\s]*__END__\s*$)/}\n/m;
+    $code =~ s/(?=__END__\s*$)/}\n/m;
 
     return $code, $line-1, ($content =~ m/^=for\s+test_synopsis\s+(.+?)^=/msg);
 }
