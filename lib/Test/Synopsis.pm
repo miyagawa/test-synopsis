@@ -1,7 +1,9 @@
 package Test::Synopsis;
+
 use strict;
 use 5.008_001;
-our $VERSION = '0.06';
+
+# VERSION
 
 use base qw( Test::Builder::Module );
 our @EXPORT = qw( synopsis_ok all_synopsis_ok );
@@ -102,16 +104,16 @@ that code is a C<BEGIN {}> block or a C<use> statement.
 Suppose you have the following POD in your module.
 
   =head1 NAME
-  
+
   Awesome::Template - My awesome template
-  
+
   =head1 SYNOPSIS
-    
+
     use Awesome::Template;
-    
+
     my $template = Awesome::Template->new;
     $tempalte->render("template.at");
-  
+
   =head1 DESCRIPTION
 
 An user of your module would try copy-paste this synopsis code and
@@ -125,7 +127,7 @@ Sometimes you might want to put some undeclared variables in your
 synopsis, like:
 
   =head1 SYNOPSIS
-    
+
     use Data::Dumper::Names;
     print Dumper($scalar, \@array, \%hash);
 
@@ -155,6 +157,23 @@ SYNOPSIS which might confuse users.
 This module will not check code past the C<__END__> token, if one is
 present in the SYNOPSIS code.
 
+=head1 REPOSITORY
+
+Fork this module on GitHub:
+L<https://github.com/zoffixznet/Test-Synopsis>
+
+=head1 BUGS
+
+To report bugs or request features, please use
+L<https://github.com/zoffixznet/Test-Synopsis/issues>
+
+If you can't access GitHub, you can email your request
+to C<bug-Test-Synopsis at rt.cpan.org>
+
+=head1 MAINTAINER
+
+Zoffix Znet <cpan (at) zoffix.com>
+
 =head1 AUTHOR
 
 Tatsuhiko Miyagawa E<lt>miyagawa@bulknews.netE<gt>
@@ -170,6 +189,6 @@ it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-L<Test::Pod>, L<Test::UseAllModules>, L<Test::Inline>, L<Test::Snippet>
+L<Test::Pod>, L<Test::UseAllModules>, L<Test::Inline>
 
 =cut
