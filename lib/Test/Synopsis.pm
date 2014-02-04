@@ -54,6 +54,9 @@ sub extract_synopsis {
     my $code = ($content =~ m/^=head1\s+SYNOPSIS(.+?)^=head1/ms)[0];
     my $line = ($` || '') =~ tr/\n/\n/;
 
+    # don't want __END__ blocks in SYNOPSIS chopping our '}' in wrapper sub
+    $code =~ s/(?=[;\s]*__END__\s*$)/}\n/m;
+
     return $code, $line-1, ($content =~ m/^=for\s+test_synopsis\s+(.+?)^=/msg);
 }
 
@@ -142,6 +145,11 @@ Test::Synopsis will find these C<=for> blocks and these statements are
 prepended before your SYNOPSIS code when being evaluated, so those
 variable name errors will go away, without adding unnecessary bits in
 SYNOPSIS which might confuse users.
+
+=head1 CAVEATS
+
+This module will not check code past the C<__END__> token, if one is
+present in the SYNOPSIS code.
 
 =head1 AUTHOR
 

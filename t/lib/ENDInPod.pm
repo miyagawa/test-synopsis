@@ -1,0 +1,30 @@
+package Test::Synopsis::__TestBait_ENDinPod;
+
+# Dummy module used during testing of Test::Synopsis. Needs to be in the lib/
+# dir of the Test-Synopsis distribution to Test::Synopsis can find it.
+#
+# This module does not has an __END__ in the synopsis code; it shouldn't
+# break Test::Synopsis
+
+use strict;
+use warnings;
+
+our $VERSION = '0.05';
+
+1;
+
+=pod
+
+=head1 SYNOPSIS
+
+    print "Foos!\n";
+    
+    __END__
+    
+    BLARGHS!
+
+=head1 DESCRIPTION
+
+bleh
+
+=cut
