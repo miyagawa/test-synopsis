@@ -302,8 +302,8 @@ you use this subroutine (e.g. with C<< use Test::More tests => 1; >>)
 This module will not check code past the C<__END__> token, if one is
 present in the SYNOPSIS code.
 
-This module will execute any code you specify in the C<BEGIN {}> blocks
-in the SYNOPSIS.
+This module will actually execute C<use> statements and any code
+you specify in the C<BEGIN {}> blocks in the SYNOPSIS.
 
 If you're using HEREDOCs in your SYNOPSIS, you will need to place
 the ending of the HEREDOC at the same indent as the
