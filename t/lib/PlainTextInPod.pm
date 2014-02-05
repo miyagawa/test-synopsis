@@ -9,7 +9,7 @@ package Test::Synopsis::__TestBait_PlainTextInPod;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+# VERSION
 
 1;
 
@@ -20,11 +20,11 @@ our $VERSION = '0.05';
 Print some foos:
 
     print "Foos!\n";
-    
+
 Blarg away:
-    
+
     BLARGHS();
-    
+
 MOAR BLARGHS!
 
 =head1 DESCRIPTION

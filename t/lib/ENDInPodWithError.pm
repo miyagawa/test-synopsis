@@ -1,9 +1,9 @@
-package Test::Synopsis::__TestBait_ENDinPod;
+package Test::Synopsis::__TestBait_ENDinPodWithError;
 
 # Dummy module used during testing of Test::Synopsis. Needs to be in the lib/
 # dir of the Test-Synopsis distribution to Test::Synopsis can find it.
 #
-# This module does not has an __END__ in the synopsis code; it shouldn't
+# This module does not has an __END__ in the synopsis code; it should
 # break Test::Synopsis
 
 use strict;
@@ -19,7 +19,7 @@ use warnings;
 
 Testing stuff:
 
-    print "Foos!\n";
+    print "Foos!\n"; ****** ZOMG! A ERRORZ! :D
 
     __END__
 
