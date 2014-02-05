@@ -18,5 +18,5 @@ Testing stuff:
         no strict 'refs';
         die "CLASHING!" if grep $_ eq 'Foo', keys %{ __PACKAGE__ .'::' };
     }
-    
+
 =end

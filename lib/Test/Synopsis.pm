@@ -38,12 +38,19 @@ sub synopsis_ok {
         my $test   = qq(#line $line "$module"\n$option; sub { $code });
         my $ok     = _compile($test);
 
-        __PACKAGE__->builder->ok($ok, $module);
-        __PACKAGE__->builder->diag(
-            $ARGS{dump_all_code_on_error}
-            ? "$@\nEVALED CODE:\n$test"
-            : $@
-          ) unless $ok;
+        # See if the user is trying to skip this test using the =for block
+        if ( not $ok and $@ =~ s/^SKIP:\s*//i ) {
+          $@ =~ s/\nBEGIN failed--compilation aborted at.+//s;
+          __PACKAGE__->builder->skip($@, 1);
+        }
+        else {
+          __PACKAGE__->builder->ok($ok, $module);
+          __PACKAGE__->builder->diag(
+              $ARGS{dump_all_code_on_error}
+              ? "$@\nEVALED CODE:\n$test"
+              : $@
+            ) unless $ok;
+        }
     }
 }
 
@@ -64,7 +71,7 @@ sub _extract_synopsis {
 
     # don't want __END__ blocks in SYNOPSIS chopping our '}' in wrapper sub
     $test_synopsis =~ s/(?=__END__\s*$)/}\n/m;
-    
+
     # trim indent whitespace to make HEREDOCs work properly
     # we'll assume the indent of the first line is the proper indent
     # to use for the whole block
@@ -152,7 +159,8 @@ __END__
 
 =encoding utf-8
 
-=for stopwords Goro blogged Znet Zoffix DOHERTY Doherty KRYDE Ryde ZOFFIX Gr nauer Grünauer pm
+=for stopwords Goro blogged Znet Zoffix DOHERTY Doherty
+  KRYDE Ryde ZOFFIX Gr nauer Grünauer pm HEREDOC HEREDOCs
 
 =for test_synopsis $main::for_checked=1
 
@@ -233,6 +241,24 @@ prepended before your SYNOPSIS code when being evaluated, so those
 variable name errors will go away, without adding unnecessary bits in
 SYNOPSIS which might confuse users.
 
+=head1 SKIPPING TEST FROM INSIDE THE POD
+
+You can use a C<BEGIN{}> block in the C<=for test_synopsis> to check for
+specific conditions (e.g. if a module is present), and possibly skip
+the test.
+
+If you C<die()> inside the C<BEGIN{}> block and the die message begins
+with sequence C<SKIP:> (note the colon at the end), the test
+will be skipped for that document.
+
+  =head1 SYNOPSIS
+
+  =for test_synopsis BEGIN { die "SKIP: skip this pod, it's horrible!\n"; }
+
+      $x; # undeclared variable, but we skipped the test!
+
+  =end
+
 =head1 EXPORTED SUBROUTINES
 
 =head2 C<all_synopsis_ok>
@@ -268,7 +294,7 @@ of each line (C<perl -pi -e 's/^#\s//;' TEMP_FILE_WITH_CODE>)
   synopsis_ok("t/lib/NoPod.pm");
 
 Lets you test a single file. B<Note:> you must setup your own plan if
-you use this subroutine (e.g. with C<use Test::More tests => 1;>)
+you use this subroutine (e.g. with C<< use Test::More tests => 1; >>)
 
 =head1 CAVEATS
 
