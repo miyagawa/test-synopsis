@@ -60,11 +60,15 @@ sub _extract_synopsis {
 
     my $parser = Test::Synopsis::Parser->new;
     $parser->parse_from_file ($file);
+    my $test_synopsis = $parser->{'test_synopsis'} || '';
 
     # don't want __END__ blocks in SYNOPSIS chopping our '}' in wrapper sub
-    $parser->{'test_synopsis'} = ''
-      unless defined $parser->{'test_synopsis'};
-    $parser->{'test_synopsis'} =~ s/(?=__END__\s*$)/}\n/m;
+    $test_synopsis =~ s/(?=__END__\s*$)/}\n/m;
+    
+    # trim indent whitespace to make HEREDOCs work properly
+    # we'll assume the indent of the first line is the proper indent
+    # to use for the whole block
+    $test_synopsis =~ s/(\A(\s+).+)/ (my $x = $1) =~ s{^$2}{}gm; $x /se;
 
     # Correct the reported line number of the error, depending on what
     # =for options we were supplied with.
@@ -72,7 +76,7 @@ sub _extract_synopsis {
     $options_lines = $options_lines =~ tr/\n/\n/;
 
     return (
-      $parser->{'test_synopsis'},
+      $test_synopsis,
       ($parser->{'test_synopsis_linenum'} || 0) - ($options_lines || 0),
       @{ $parser->{'test_synopsis_options'} }
     );
@@ -273,6 +277,10 @@ present in the SYNOPSIS code.
 
 This module will execute any code you specify in the C<BEGIN {}> blocks
 in the SYNOPSIS.
+
+If you're using HEREDOCs in your SYNOPSIS, you will need to place
+the ending of the HEREDOC at the same indent as the
+first line of the code of your SYNOPSIS.
 
 =head1 REPOSITORY
 

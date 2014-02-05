@@ -1,5 +1,5 @@
 use Test::More tests => 1;
 use Test::Synopsis;
-synopsis_ok("t/lib/ENDInPod.pm");
+synopsis_ok("t/lib/Test10HEREDOC.pm");
 
 
