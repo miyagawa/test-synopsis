@@ -126,17 +126,20 @@ of each line (`perl -pi -e 's/^#\s//;' TEMP_FILE_WITH_CODE`)
     use Test::More tests => 1;
     use Test::Synopsis;
     synopsis_ok("t/lib/NoPod.pm");
+    synopsis_ok(qw/Pod1.pm  Pod2.pm  Pod3.pm/);
 
 Lets you test a single file. __Note:__ you must setup your own plan if
-you use this subroutine (e.g. with `use Test::More tests => 1;`)
+you use this subroutine (e.g. with `use Test::More tests => 1;`).
+__Takes__ a list of filenames for documents containing SYNOPSIS code to test.
 
 # CAVEATS
 
-This module will not check code past the `__END__` token, if one is
+This module will not check code past the `__END__` or
+`__DATA__` tokens, if one is
 present in the SYNOPSIS code.
 
-This module will execute any code you specify in the `BEGIN {}` blocks
-in the SYNOPSIS.
+This module will actually execute `use` statements and any code
+you specify in the `BEGIN {}` blocks in the SYNOPSIS.
 
 If you're using HEREDOCs in your SYNOPSIS, you will need to place
 the ending of the HEREDOC at the same indent as the
@@ -145,12 +148,12 @@ first line of the code of your SYNOPSIS.
 # REPOSITORY
 
 Fork this module on GitHub:
-[https://github.com/zoffixznet/Test-Synopsis](https://github.com/zoffixznet/Test-Synopsis)
+[https://github.com/miyagawa/Test-Synopsis](https://github.com/miyagawa/Test-Synopsis)
 
 # BUGS
 
 To report bugs or request features, please use
-[https://github.com/zoffixznet/Test-Synopsis/issues](https://github.com/zoffixznet/Test-Synopsis/issues)
+[https://github.com/miyagawa/Test-Synopsis/issues](https://github.com/miyagawa/Test-Synopsis/issues)
 
 If you can't access GitHub, you can email your request
 to `bug-Test-Synopsis at rt.cpan.org`

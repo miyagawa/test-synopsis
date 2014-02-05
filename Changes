@@ -1,5 +1,12 @@
 Revision history for Perl extension Test::Synopsis
 
+0.08  2014-02-05
+        [Changes by ZOFFIX]
+        - Implemented proper handling of __DATA__ tokens
+        - Removed unwanted warnings issued during tests
+        - Upped required Test-Simple distro version (Fixes Issue #9)
+        - Minor pod fixes
+
 0.07  2014-02-04
 
         [Changes by ZOFFIX]
