@@ -1,9 +1,9 @@
-package Test::Synopsis::__TestBait_ENDinPod;
+package Test::Synopsis::__TestBait_Test11DATAInPod;
 
 # Dummy module used during testing of Test::Synopsis. Needs to be in the lib/
 # dir of the Test-Synopsis distribution to Test::Synopsis can find it.
 #
-# This module has an __END__ in the synopsis code; it shouldn't
+# This module has a __DATA__ in the synopsis code; it shouldn't
 # break Test::Synopsis
 
 use strict;
@@ -21,9 +21,9 @@ Testing stuff:
 
     print "Foos!\n";
 
-    __END__
+    __DATA__
 
-    BLARGHS!
+    $x; # uninitialized!
 
 =head1 DESCRIPTION
 

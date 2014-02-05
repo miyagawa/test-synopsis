@@ -71,7 +71,10 @@ sub _extract_synopsis {
     my $test_synopsis = $parser->{'test_synopsis'} || '';
 
     # don't want __END__ blocks in SYNOPSIS chopping our '}' in wrapper sub
-    $test_synopsis =~ s/(?=__END__\s*$)/}\n/m;
+    # same goes for __DATA__ and although we'll be sticking an extra '}'
+    # into its contents; it shouldn't matter since the code shouldn't be
+    # run anyways.
+    $test_synopsis =~ s/(?=(?:__END__|__DATA__)\s*$)/}\n/m;
 
     # trim indent whitespace to make HEREDOCs work properly
     # we'll assume the indent of the first line is the proper indent
@@ -293,13 +296,16 @@ of each line (C<perl -pi -e 's/^#\s//;' TEMP_FILE_WITH_CODE>)
   use Test::More tests => 1;
   use Test::Synopsis;
   synopsis_ok("t/lib/NoPod.pm");
+  synopsis_ok(qw/Pod1.pm  Pod2.pm  Pod3.pm/);
 
 Lets you test a single file. B<Note:> you must setup your own plan if
-you use this subroutine (e.g. with C<< use Test::More tests => 1; >>)
+you use this subroutine (e.g. with C<< use Test::More tests => 1; >>).
+B<Takes> a list of filenames for documents containing SYNOPSIS code to test.
 
 =head1 CAVEATS
 
-This module will not check code past the C<__END__> token, if one is
+This module will not check code past the C<__END__> or
+C<__DATA__> tokens, if one is
 present in the SYNOPSIS code.
 
 This module will actually execute C<use> statements and any code
@@ -338,13 +344,13 @@ Zoffix Znet <cpan (at) zoffix.com>
 
 =over 4
 
-=item Kevin Ryde (L<KRYDE|https://metacpan.org/author/KRYDE>)
+=item * Kevin Ryde (L<KRYDE|https://metacpan.org/author/KRYDE>)
 
-=item Marcel Grünauer (L<MARCEL|https://metacpan.org/author/MARCEL>)
+=item * Marcel Grünauer (L<MARCEL|https://metacpan.org/author/MARCEL>)
 
-=item Mike Doherty (L<DOHERTY|https://metacpan.org/author/DOHERTY>)
+=item * Mike Doherty (L<DOHERTY|https://metacpan.org/author/DOHERTY>)
 
-=item Zoffix Znet (L<ZOFFIX|https://metacpan.org/author/ZOFFIX>)
+=item * Zoffix Znet (L<ZOFFIX|https://metacpan.org/author/ZOFFIX>)
 
 =back
 
