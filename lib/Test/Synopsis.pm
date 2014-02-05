@@ -10,7 +10,8 @@ use base qw( Test::Builder::Module );
 our @EXPORT = qw( synopsis_ok all_synopsis_ok );
 
 use ExtUtils::Manifest qw( maniread );
-my %ARGS = ( dump_all_code_on_error => 1 ); ### REMOVE THIS FOR PRODUCTION!!!
+my %ARGS;
+ # = ( dump_all_code_on_error => 1 ); ### REMOVE THIS FOR PRODUCTION!!!
 sub all_synopsis_ok {
     %ARGS = @_;
 
