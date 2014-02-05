@@ -39,7 +39,8 @@ sub synopsis_ok {
         my $ok     = _compile($test);
 
         # See if the user is trying to skip this test using the =for block
-        if ( not $ok and $@ =~ s/^SKIP:\s*//i ) {
+        if ( !$ok and $@=~/^SKIP:.+BEGIN failed--compilation aborted/si ) {
+          $@ =~ s/^SKIP:\s*//;
           $@ =~ s/\nBEGIN failed--compilation aborted at.+//s;
           __PACKAGE__->builder->skip($@, 1);
         }
