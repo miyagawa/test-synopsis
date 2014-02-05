@@ -47,10 +47,12 @@ sub synopsis_ok {
     }
 }
 
+my $sandbox = 0;
 sub _compile {
     package
         Test::Synopsis::Sandbox;
-    eval $_[0]; ## no critic
+    eval sprintf "package\nTest::Synopsis::Sandbox%d;\n%s",
+      ++$sandbox, $_[0]; ## no critic
 }
 
 sub _extract_synopsis {
@@ -64,9 +66,14 @@ sub _extract_synopsis {
       unless defined $parser->{'test_synopsis'};
     $parser->{'test_synopsis'} =~ s/(?=__END__\s*$)/}\n/m;
 
+    # Correct the reported line number of the error, depending on what
+    # =for options we were supplied with.
+    my $options_lines = join '', @{ $parser->{'test_synopsis_options'} };
+    $options_lines = $options_lines =~ tr/\n/\n/;
+
     return (
       $parser->{'test_synopsis'},
-      $parser->{'test_synopsis_linenum'},
+      ($parser->{'test_synopsis_linenum'} || 0) - ($options_lines || 0),
       @{ $parser->{'test_synopsis_options'} }
     );
 }
@@ -126,7 +133,7 @@ sub verbatim {
         push @{$self->{'test_synopsis_options'}}, $text;
 
     } elsif ( $self->{'within_synopsis'} && ! $self->{'within_begin'} ) {
-        $self->{'test_synopsis_linenum'} ||= $linenum; # first occurance
+        $self->{'test_synopsis_linenum'} = $linenum; # first occurance
         $self->{'test_synopsis'} .= $text;
     }
     return '';
