@@ -19,7 +19,9 @@ use warnings;
 
 Testing stuff:
 
-    print "Foos!\n"; ****** ZOMG! A ERRORZ! :D
+    print "Foos!\n";
+
+    $x; # undeclared
 
     __END__
 

@@ -13,9 +13,9 @@ use warnings;
 
 =head1 SYNOPSIS
 
-    print "Foos!\n"; ****** ZOMG! A ERRORZ! :D
+    print "Foos!\n";
 
-    BLARGHS!
+    $x; # undeclared
 
 =head1 DESCRIPTION
 
