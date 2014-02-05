@@ -312,12 +312,12 @@ first line of the code of your SYNOPSIS.
 =head1 REPOSITORY
 
 Fork this module on GitHub:
-L<https://github.com/zoffixznet/Test-Synopsis>
+L<https://github.com/miyagawa/Test-Synopsis>
 
 =head1 BUGS
 
 To report bugs or request features, please use
-L<https://github.com/zoffixznet/Test-Synopsis/issues>
+L<https://github.com/miyagawa/Test-Synopsis/issues>
 
 If you can't access GitHub, you can email your request
 to C<bug-Test-Synopsis at rt.cpan.org>
