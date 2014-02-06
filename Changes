@@ -1,5 +1,10 @@
 Revision history for Perl extension Test::Synopsis
 
+0.09  2014-02-06
+        [Changes by ZOFFIX]
+        - Fixed prereqs to allow earlier versions of Test-Simple (Issue #9)
+        - Removed POD errors from test .pm's to increase Kwalitee
+
 0.08  2014-02-05
         [Changes by ZOFFIX]
         - Implemented proper handling of __DATA__ tokens

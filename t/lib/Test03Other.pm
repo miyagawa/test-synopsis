@@ -19,4 +19,4 @@ Testing stuff:
         die "CLASHING!" if grep $_ eq 'Foo', keys %{ __PACKAGE__ .'::' };
     }
 
-=end
+=cut

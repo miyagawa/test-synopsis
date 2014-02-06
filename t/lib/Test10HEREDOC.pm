@@ -18,4 +18,4 @@ Testing stuff:
         blargs
     END
 
-=end
+=cut

@@ -16,4 +16,4 @@ Testing stuff:
 
     BEGIN { our $Foo = 42; }
 
-=end
+=cut

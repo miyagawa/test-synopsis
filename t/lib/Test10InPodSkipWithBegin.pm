@@ -16,4 +16,4 @@ use warnings;
 
     $x;
 
-=end
+=cut
