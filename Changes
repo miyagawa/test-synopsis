@@ -1,5 +1,13 @@
 Revision history for Perl extension Test::Synopsis
 
+0.10  2014-02-07
+        [Changes by ZOFFIX]
+        - Reverted the change of renaming extract_synopsis() to
+          _extract_synopsis(), as it appears some distros have used
+          undocumented extract_synopsis() in their user tests, and
+          the change is causing their distros to fail
+        - Added contributors into META file through dzil plugin
+
 0.09  2014-02-06
         [Changes by ZOFFIX]
         - Fixed prereqs to allow earlier versions of Test-Simple (Issue #9)

@@ -28,7 +28,7 @@ sub synopsis_ok {
     my @modules = @_;
 
     for my $module (@modules) {
-        my($code, $line, @option) = _extract_synopsis($module);
+        my($code, $line, @option) = extract_synopsis($module);
         unless ($code) {
             __PACKAGE__->builder->ok(1, "No SYNOPSIS code");
             next;
@@ -63,7 +63,9 @@ sub _compile {
       ++$sandbox, $_[0]; ## no critic
 }
 
-sub _extract_synopsis {
+### WARNING: DESPITE THE NAME OF THIS SUBROUTINE (no underscore)
+### IT'S A PRIVATE SUB; DO NOT USE IT DIRECTLY IN YOUR CODE!
+sub extract_synopsis {
     my $file = shift;
 
     my $parser = Test::Synopsis::Parser->new;
@@ -162,6 +164,8 @@ sub textblock {
 __END__
 
 =encoding utf-8
+
+=for Pod::Coverage extract_synopsis
 
 =for stopwords Goro blogged Znet Zoffix DOHERTY Doherty
   KRYDE Ryde ZOFFIX Gr nauer Grünauer pm HEREDOC HEREDOCs
