@@ -319,6 +319,14 @@ If you're using HEREDOCs in your SYNOPSIS, you will need to place
 the ending of the HEREDOC at the same indent as the
 first line of the code of your SYNOPSIS.
 
+The code from multiple files will be executed under the same perl process,
+so it's possible to run into issues such as, say, sub redefinition
+warnings. Currently, there's no plan to fix this, but patches are welcome.
+Redefinition warnings can be turned off with
+
+  =for test_synopsis
+  no warnings 'redefine';
+
 =head1 REPOSITORY
 
 Fork this module on GitHub:
