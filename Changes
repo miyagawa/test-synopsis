@@ -1,5 +1,10 @@
 Revision history for Perl extension Test::Synopsis
 
+0.11  2014-10-04
+        [Changes by ZOFFIX]
+        - Added #10 to CAVEATS (redefined warnings)
+        - Fixed #11 (failing tests on newer perls)
+
 0.10  2014-02-07
         [Changes by ZOFFIX]
         - Reverted the change of renaming extract_synopsis() to
