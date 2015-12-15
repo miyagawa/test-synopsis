@@ -9,6 +9,7 @@ use 5.008_001;
 use base qw( Test::Builder::Module );
 our @EXPORT = qw( synopsis_ok all_synopsis_ok );
 
+use Data::Dumper;
 use ExtUtils::Manifest qw( maniread );
 my %ARGS;
  # = ( dump_all_code_on_error => 1 ); ### REMOVE THIS FOR PRODUCTION!!!
@@ -101,10 +102,16 @@ package
 ### Parser patch by Kevin Ryde
 
 use base 'Pod::Parser';
+use Data::Dumper;
+
 sub new {
     my $class = shift;
     return $class->SUPER::new(
-      @_, within_begin => '', test_synopsis_options => []
+        @_,
+        within_begin => '',
+        test_synopsis_options => [],
+        synopsis_counter => 0,
+        synopsis_store => {}
     );
 }
 
@@ -112,6 +119,14 @@ sub command {
     my $self = shift;
     my ($command, $text) = @_;
     ## print "command: '$command' -- '$text'\n";
+
+    print Dumper $self;
+
+    # increment counter variable
+    # when a new SYNOPSIS block is encountered
+    if ($text =~ /^SYNOPSIS\s*$/) {
+        $self->{synopsis_counter}++;
+    }
 
     if ($command eq 'for') {
         if ($text =~ /^test_synopsis\s+(.*)/s) {
@@ -144,6 +159,16 @@ sub command {
     return '';
 }
 
+sub store_value {
+    my ($self, $key, $value) = @_;
+    $self->{synopsis_store}->{$self->{synopsis_counter}}->{$key} .= $value;
+}
+
+sub get_value {
+    my ($self, $key) = @_;
+    return $self->{synopsis_store}->{$self->{synosis_value}}->{$key};
+}
+
 sub verbatim {
     my ( $self, $text, $linenum ) = @_;
     if ( $self->{'within_begin'} =~ /^test_synopsis\b/ ) {
@@ -151,7 +176,11 @@ sub verbatim {
 
     } elsif ( $self->{'within_synopsis'} && ! $self->{'within_begin'} ) {
         $self->{'test_synopsis_linenum'} = $linenum; # first occurance
-        $self->{'test_synopsis'} .= $text;
+        # store code in synopsis_store hash
+        # key => SYNOPSIS_ + counter value
+        # value => code
+        # $self->{synopsis_store}->{$self->{synopsis_counter}}->{text} .= $text;
+        store_value($self, 'text', $text);
     }
     return '';
 }
