@@ -1,5 +1,8 @@
 Revision history for Perl extension Test::Synopsis
 
+0.12  2015-12-27
+        - Add META.json (monsieurp)
+
 0.11  2014-10-04
         [Changes by ZOFFIX]
         - Added #10 to CAVEATS (redefined warnings)
