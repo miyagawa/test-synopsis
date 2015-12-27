@@ -21,7 +21,7 @@ under your _lib_ directory and then make sure the example snippet
 code in your _SYNOPSIS_ section passes the perl compile check.
 
 Note that this module only checks the perl syntax (by wrapping the
-code with `sub`) and doesn't actually run the code, __UNLESS__
+code with `sub`) and doesn't actually run the code, **UNLESS**
 that code is a `BEGIN {}` block or a `use` statement.
 
 Suppose you have the following POD in your module.
@@ -32,10 +32,10 @@ Suppose you have the following POD in your module.
 
     =head1 SYNOPSIS
 
-    use Awesome::Template;
+      use Awesome::Template;
 
-    my $template = Awesome::Template->new;
-    $tempalte->render("template.at");
+      my $template = Awesome::Template->new;
+      $tempalte->render("template.at");
 
     =head1 DESCRIPTION
 
@@ -51,8 +51,8 @@ synopsis, like:
 
     =head1 SYNOPSIS
 
-    use Data::Dumper::Names;
-    print Dumper($scalar, \@array, \%hash);
+      use Data::Dumper::Names;
+      print Dumper($scalar, \@array, \%hash);
 
 This assumes these variables like _$scalar_ are defined elsewhere in
 module user's code, but Test::Synopsis, by default, will complain that
@@ -89,7 +89,7 @@ will be skipped for that document.
 
     =for test_synopsis BEGIN { die "SKIP: skip this pod, it's horrible!\n"; }
 
-      $x; # undeclared variable, but we skipped the test!
+        $x; # undeclared variable, but we skipped the test!
 
     =end
 
@@ -101,14 +101,14 @@ will be skipped for that document.
 
     all_synopsis_ok( dump_all_code_on_error => 1 );
 
-Checks the SYNOPSIS code in all your modules. Takes __optional__
+Checks the SYNOPSIS code in all your modules. Takes **optional**
 arguments as key/value pairs. Possible arguments are as follows:
 
 ### `dump_all_code_on_error`
 
     all_synopsis_ok( dump_all_code_on_error => 1 );
 
-Takes true or false values as a value. __Defaults to:__ false. When
+Takes true or false values as a value. **Defaults to:** false. When
 set to a true value, if an error is discovered in the SYNOPSIS code,
 the test will dump the entire snippet of code it tried to test. Use this
 if you want to copy/paste and play around with the code until the error
@@ -118,7 +118,7 @@ The dumped code will include any of the `=for` code you specified (see
 ["VARIABLE DECLARATIONS"](#variable-declarations) section above) as well as a few internal bits
 this test module uses to make SYNOPSIS code checking possible.
 
-__Note:__ you will likely have to remove the `#` and a space at the start
+**Note:** you will likely have to remove the `#` and a space at the start
 of each line (`perl -pi -e 's/^#\s//;' TEMP_FILE_WITH_CODE`)
 
 ## `synopsis_ok`
@@ -128,9 +128,9 @@ of each line (`perl -pi -e 's/^#\s//;' TEMP_FILE_WITH_CODE`)
     synopsis_ok("t/lib/NoPod.pm");
     synopsis_ok(qw/Pod1.pm  Pod2.pm  Pod3.pm/);
 
-Lets you test a single file. __Note:__ you must setup your own plan if
+Lets you test a single file. **Note:** you must setup your own plan if
 you use this subroutine (e.g. with `use Test::More tests => 1;`).
-__Takes__ a list of filenames for documents containing SYNOPSIS code to test.
+**Takes** a list of filenames for documents containing SYNOPSIS code to test.
 
 # CAVEATS
 
@@ -144,6 +144,14 @@ you specify in the `BEGIN {}` blocks in the SYNOPSIS.
 If you're using HEREDOCs in your SYNOPSIS, you will need to place
 the ending of the HEREDOC at the same indent as the
 first line of the code of your SYNOPSIS.
+
+The code from multiple files will be executed under the same perl process,
+so it's possible to run into issues such as, say, sub redefinition
+warnings. Currently, there's no plan to fix this, but patches are welcome.
+Redefinition warnings can be turned off with
+
+    =for test_synopsis
+    no warnings 'redefine';
 
 # REPOSITORY
 
@@ -160,7 +168,7 @@ to `bug-Test-Synopsis at rt.cpan.org`
 
 # AUTHOR
 
-Tatsuhiko Miyagawa <miyagawa@bulknews.net>
+Tatsuhiko Miyagawa &lt;miyagawa@bulknews.net>
 
 Goro Fuji blogged about the original idea at
 [http://d.hatena.ne.jp/gfx/20090224/1235449381](http://d.hatena.ne.jp/gfx/20090224/1235449381) based on the testing
@@ -168,7 +176,7 @@ code taken from [Test::Weaken](https://metacpan.org/pod/Test::Weaken).
 
 # MAINTAINER
 
-Zoffix Znet <cpan (at) zoffix.com>
+Zoffix Znet &lt;cpan (at) zoffix.com>
 
 # CONTRIBUTORS
 
