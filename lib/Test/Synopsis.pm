@@ -362,6 +362,8 @@ Zoffix Znet <cpan (at) zoffix.com>
 
 =item * Mike Doherty (L<DOHERTY|https://metacpan.org/author/DOHERTY>)
 
+=item * Patrice Clement (L<monsieurp|https://github.com/monsieurp>)
+
 =item * Zoffix Znet (L<ZOFFIX|https://metacpan.org/author/ZOFFIX>)
 
 =back
