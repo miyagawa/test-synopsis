@@ -16,43 +16,60 @@ sub all_synopsis_ok {
     %ARGS = @_;
 
     my $manifest = maniread();
-    my @files = grep m!^lib/.*\.p(od|m)$!, keys %$manifest;
-    __PACKAGE__->builder->plan(@files
-        ? (tests => 1 * @files)
-        : (skip_all => 'No files in lib to test')
-    );
+    my @files = grep m!^lib/.*\.p(od|m)$!, keys %$manifest
+		or __PACKAGE__->builder->skip_all('No files in lib to test');
+
+    __PACKAGE__->builder->no_plan();
+
     synopsis_ok(@files);
+
+	__PACKAGE__->builder->done_testing();
+
 }
 
 sub synopsis_ok {
     my @modules = @_;
 
     for my $module (@modules) {
-        my($code, $line, @option) = extract_synopsis($module);
-        unless ($code) {
+        my($codes, $line, @option) = extract_synopsis($module);
+        unless (keys %$codes) {
             __PACKAGE__->builder->ok(1, "No SYNOPSIS code");
             next;
         }
 
         my $option = join(";", @option);
-        my $test   = qq(#line $line "$module"\n$option; sub { $code });
-        my $ok     = _compile($test);
 
-        # See if the user is trying to skip this test using the =for block
-        if ( !$ok and $@=~/^SKIP:.+BEGIN failed--compilation aborted/si ) {
-          $@ =~ s/^SKIP:\s*//;
-          $@ =~ s/\nBEGIN failed--compilation aborted at.+//s;
-          __PACKAGE__->builder->skip($@, 1);
-        }
-        else {
-          __PACKAGE__->builder->ok($ok, $module);
-          __PACKAGE__->builder->diag(
-              $ARGS{dump_all_code_on_error}
-              ? "$@\nEVALED CODE:\n$test"
-              : $@
-            ) unless $ok;
-        }
-    }
+		for my $entry (sort { $a <=> $b } keys %$codes) {
+			for my $file (sort keys %{$codes->{$entry}}) {
+				my $number_sections = keys %{ $codes->{$entry}{$file} };
+				for my $section (sort { $a <=> $b } keys %{ $codes->{$entry}{$file} }) {
+					my $code = $codes->{$entry}{$file}{$section};
+					my $test   = qq(#line $line "$module"\n$option; sub { $code });
+					my $ok     = _compile($test);
+
+					# See if the user is trying to skip this test using the =for block
+					if ( !$ok and $@=~/^SKIP:.+BEGIN failed--compilation aborted/si ) {
+						$@ =~ s/^SKIP:\s*//;
+						$@ =~ s/\nBEGIN failed--compilation aborted at.+//s;
+						__PACKAGE__->builder->skip($@, 1);
+					}
+					else {
+						my $sectionname = $file;
+						## Show section number if more than one section only
+						if ($number_sections > 1) {
+							$sectionname .= " (section $section)";
+						}
+						__PACKAGE__->builder->ok($ok, $sectionname);
+						__PACKAGE__->builder->diag(
+							$ARGS{dump_all_code_on_error}
+								? "$@\nEVALED CODE:\n$test"
+									: $@
+							) unless $ok;
+					}
+				}
+			}
+		}
+	}
 }
 
 my $sandbox = 0;
@@ -70,18 +87,24 @@ sub extract_synopsis {
 
     my $parser = Test::Synopsis::Parser->new;
     $parser->parse_from_file ($file);
-    my $test_synopsis = $parser->{'test_synopsis'} || '';
 
-    # don't want __END__ blocks in SYNOPSIS chopping our '}' in wrapper sub
-    # same goes for __DATA__ and although we'll be sticking an extra '}'
-    # into its contents; it shouldn't matter since the code shouldn't be
-    # run anyways.
-    $test_synopsis =~ s/(?=(?:__END__|__DATA__)\s*$)/}\n/m;
+	for my $entry (values %{$parser->{'test_synopsis_text'}}) {
+		for my $sectionhash (values %{$entry}) {
+			for my $section_text ( values %{$sectionhash}) {
 
-    # trim indent whitespace to make HEREDOCs work properly
-    # we'll assume the indent of the first line is the proper indent
-    # to use for the whole block
-    $test_synopsis =~ s/(\A(\s+).+)/ (my $x = $1) =~ s{^$2}{}gm; $x /se;
+				# don't want __END__ blocks in SYNOPSIS chopping our '}' in wrapper sub
+				# same goes for __DATA__ and although we'll be sticking an extra '}'
+				# into its contents; it shouldn't matter since the code shouldn't be
+				# run anyways.
+				$section_text =~ s/(?=(?:__END__|__DATA__)\s*$)/}\n/m;
+
+				# trim indent whitespace to make HEREDOCs work properly
+				# we'll assume the indent of the first line is the proper indent
+				# to use for the whole block
+				$section_text =~ s/(\A(\s+).+)/ (my $x = $1) =~ s{^$2}{}gm; $x /se;
+			}
+		}
+	}
 
     # Correct the reported line number of the error, depending on what
     # =for options we were supplied with.
@@ -89,7 +112,7 @@ sub extract_synopsis {
     $options_lines = $options_lines =~ tr/\n/\n/;
 
     return (
-      $test_synopsis,
+      $parser->{'test_synopsis_text'},
       ($parser->{'test_synopsis_linenum'} || 0) - ($options_lines || 0),
       @{ $parser->{'test_synopsis_options'} }
     );
@@ -103,15 +126,21 @@ package
 use base 'Pod::Parser';
 sub new {
     my $class = shift;
-    return $class->SUPER::new(
-      @_, within_begin => '', test_synopsis_options => []
+    my $self =  $class->SUPER::new(
+      @_,
+	  within_begin => '',
+	  test_synopsis_options => [],
+	  test_synopsis_section => {},
+	  test_synopsis_sequence => 1,
+	  test_synopsis_current_file => '',
+	  test_synopsis_text => {},
     );
+	return $self;
 }
 
 sub command {
     my $self = shift;
     my ($command, $text) = @_;
-    ## print "command: '$command' -- '$text'\n";
 
     if ($command eq 'for') {
         if ($text =~ /^test_synopsis\s+(.*)/s) {
@@ -146,17 +175,43 @@ sub command {
 
 sub verbatim {
     my ( $self, $text, $linenum ) = @_;
+
+	## If we are in a new file, adjust some things.
+	if ($self->{_INFILE} ne $self->{test_synopsis_current_file}) {
+		$self->{test_synopsis_current_file} = $self->{_INFILE};
+		$self->{test_synopsis_section}{$self->{_INFILE}} = 0;
+		$self->{test_synopsis_blocknumber} = 1;
+		$self->{test_synopsis_oldblocknumber} = 0;
+	}
+
+	## If we are starting a new section, adjust some things.
+	if ($self->{test_synopsis_blocknumber} != $self->{test_synopsis_oldblocknumber}) {
+		$self->{test_synopsis_oldblocknumber} = $self->{test_synopsis_blocknumber};
+		$self->{test_synopsis_section}{$self->{_INFILE}}++;
+	}
+
     if ( $self->{'within_begin'} =~ /^test_synopsis\b/ ) {
         push @{$self->{'test_synopsis_options'}}, $text;
 
     } elsif ( $self->{'within_synopsis'} && ! $self->{'within_begin'} ) {
         $self->{'test_synopsis_linenum'} = $linenum; # first occurance
-        $self->{'test_synopsis'} .= $text;
+		$self->{test_synopsis_text}{
+			## Maintain same order on checking as was read in:
+			$self->{test_synopsis_sequence}
+		}{
+			## Current file we are parsing:
+			$self->{_INFILE}
+		}{
+			## What section of the current file we are in:
+			$self->{test_synopsis_section}{$self->{_INFILE}}
+		} .= $text;
     }
     return '';
 }
 sub textblock {
     # ignore text paragraphs, only take "verbatim" blocks to be code
+	my $self = shift;
+	$self->{test_synopsis_blocknumber}++;
     return '';
 }
 
@@ -319,9 +374,6 @@ If you're using HEREDOCs in your SYNOPSIS, you will need to place
 the ending of the HEREDOC at the same indent as the
 first line of the code of your SYNOPSIS.
 
-The code from multiple files will be executed under the same perl process,
-so it's possible to run into issues such as, say, sub redefinition
-warnings. Currently, there's no plan to fix this, but patches are welcome.
 Redefinition warnings can be turned off with
 
   =for test_synopsis

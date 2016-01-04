@@ -19,4 +19,6 @@ Testing stuff:
         die "CLASHING!" if grep $_ eq 'Foo', keys %{ __PACKAGE__ .'::' };
     }
 
+    sub foobar { return 2; }
+
 =cut
