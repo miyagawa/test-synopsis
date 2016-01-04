@@ -416,6 +416,8 @@ Zoffix Znet <cpan (at) zoffix.com>
 
 =item * Patrice Clement (L<monsieurp|https://github.com/monsieurp>)
 
+=item * Greg Sabino Mullane (L<TURNSTEP|https://metacpan.org/author/TURNSTEP>)
+
 =item * Zoffix Znet (L<ZOFFIX|https://metacpan.org/author/ZOFFIX>)
 
 =back

@@ -1,5 +1,8 @@
 Revision history for Perl extension Test::Synopsis
 
+0.13  2016-01-04
+        - Fix #12 conflict with multiple chunks (by turnstep)
+
 0.12  2015-12-27
         - Add META.json (monsieurp)
 
