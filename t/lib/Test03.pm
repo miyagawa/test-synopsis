@@ -16,4 +16,6 @@ Testing stuff:
 
     BEGIN { our $Foo = 42; }
 
+    sub foobar { return 1; }
+
 =cut
