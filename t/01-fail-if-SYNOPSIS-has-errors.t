@@ -16,3 +16,4 @@ test_diag(q{  Failed test 't/lib/BrokenSYNOPSIS01.pm'},
 );
 synopsis_ok("t/lib/BrokenSYNOPSIS01.pm");
 test_test("synopsis fail works");
+
