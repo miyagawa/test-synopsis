@@ -22,9 +22,6 @@ sub all_synopsis_ok {
   __PACKAGE__->builder->no_plan();
 
   synopsis_ok(@files);
-
-  __PACKAGE__->builder->done_testing();
-
 }
 
 sub synopsis_ok {
