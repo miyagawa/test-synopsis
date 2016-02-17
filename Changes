@@ -1,5 +1,11 @@
 Revision history for Perl extension Test::Synopsis
 
+0.14  2016-02-16
+        - Complete rewrite by dolmen
+        [BREAKING CHANGES]
+        - The undocumented PRIVATE subroutine extract_synopsis
+          has been renamed. Any code using it will break
+
 0.13  2016-01-04
         - Fix #12 conflict with multiple chunks (by turnstep)
 
