@@ -12,7 +12,7 @@ test_diag(q{  Failed test 't/lib/Test12DATAInPodWithError.pm'},
         ? ' (did you forget to declare "my $x"?)'
         : ''
     )
-    . q{ at t/lib/Test12DATAInPodWithError.pm line 28.},
+    . q{ at t/lib/Test12DATAInPodWithError.pm line 24.},
 );
 synopsis_ok("t/lib/Test12DATAInPodWithError.pm");
 test_test("synopsis fail works");

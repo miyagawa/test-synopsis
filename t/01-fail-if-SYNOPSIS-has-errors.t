@@ -12,7 +12,7 @@ test_diag(q{  Failed test 't/lib/BrokenSYNOPSIS01.pm'},
             ? ' (did you forget to declare "my $x"?)'
             : ''
         )
-     . q{ at t/lib/BrokenSYNOPSIS01.pm line 20.},
+     . q{ at t/lib/BrokenSYNOPSIS01.pm line 18.},
 );
 synopsis_ok("t/lib/BrokenSYNOPSIS01.pm");
 test_test("synopsis fail works");
