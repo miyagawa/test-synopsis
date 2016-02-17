@@ -6,7 +6,7 @@ use 5.008_001;
 
 # VERSION
 
-use base qw( Test::Builder::Module );
+use parent qw( Test::Builder::Module );
 our @EXPORT = qw( synopsis_ok all_synopsis_ok );
 
 use ExtUtils::Manifest qw( maniread );
@@ -25,48 +25,51 @@ sub all_synopsis_ok {
 }
 
 sub synopsis_ok {
-    my @modules = @_;
+    my @files = @_;
 
-    for my $module (@modules) {
-        my($codes, $line, @option) = extract_synopsis($module);
-        unless (keys %$codes) {
+    for my $file (@files) {
+        my $blocks = _extract_synopsis($file);
+        unless (@$blocks) {
             __PACKAGE__->builder->ok(1, "No SYNOPSIS code");
             next;
         }
 
-        my $option = join(";", @option);
+        my $block_num = 0;
+        for my $block (@$blocks) {
+            $block_num++;
+            my ($line, $code, $options) = @$block;
 
-    for my $entry (sort { $a <=> $b } keys %$codes) {
-      for my $file (sort keys %{$codes->{$entry}}) {
-        my $number_sections = keys %{ $codes->{$entry}{$file} };
-        for my $section (sort { $a <=> $b } keys %{ $codes->{$entry}{$file} }) {
-          my $code = $codes->{$entry}{$file}{$section};
-          my $test   = qq(#line $line "$module"\n$option; sub { $code });
-          my $ok     = _compile($test);
+            # don't want __END__ blocks in SYNOPSIS chopping our '}' in wrapper sub
+            # same goes for __DATA__ and although we'll be sticking an extra '}'
+            # into its contents; it shouldn't matter since the code shouldn't be
+            # run anyways.
+            $code =~ s/(?=(?:__END__|__DATA__)\s*$)/}\n/m;
 
-          # See if the user is trying to skip this test using the =for block
-          if ( !$ok and $@=~/^SKIP:.+BEGIN failed--compilation aborted/si ) {
-            $@ =~ s/^SKIP:\s*//;
-            $@ =~ s/\nBEGIN failed--compilation aborted at.+//s;
-            __PACKAGE__->builder->skip($@, 1);
-          }
-          else {
-            my $sectionname = $file;
-            ## Show section number if more than one section only
-            if ($number_sections > 1) {
-              $sectionname .= " (section $section)";
+            $options = join(";", @$options);
+            my $test   = qq($options;\nsub{\n#line $line "$file"\n$code\n;});
+            #use Test::More (); Test::More::note "=========\n$test\n========";
+            my $ok     = _compile($test);
+
+            # See if the user is trying to skip this test using the =for block
+            if ( !$ok and $@=~/^SKIP:.+BEGIN failed--compilation aborted/si ) {
+                $@ =~ s/^SKIP:\s*//;
+                $@ =~ s/\nBEGIN failed--compilation aborted at.+//s;
+                __PACKAGE__->builder->skip($@, 1);
+            } else {
+                my $block_name = $file;
+                ## Show block number only if more than one block
+                if (@$blocks > 1) {
+                    $block_name .= " (section $block_num)";
+                }
+                __PACKAGE__->builder->ok($ok, $block_name)
+                    or __PACKAGE__->builder->diag(
+                        $ARGS{dump_all_code_on_error}
+                        ? "$@\nEVALED CODE:\n$test"
+                        : $@
+                    );
             }
-            __PACKAGE__->builder->ok($ok, $sectionname);
-            __PACKAGE__->builder->diag(
-              $ARGS{dump_all_code_on_error}
-                ? "$@\nEVALED CODE:\n$test"
-                  : $@
-              ) unless $ok;
-          }
         }
-      }
     }
-  }
 }
 
 my $sandbox = 0;
@@ -77,147 +80,90 @@ sub _compile {
       ++$sandbox, $_[0]; ## no critic
 }
 
-### WARNING: DESPITE THE NAME OF THIS SUBROUTINE (no underscore)
-### IT'S A PRIVATE SUB; DO NOT USE IT DIRECTLY IN YOUR CODE!
-sub extract_synopsis {
+sub _extract_synopsis
+{
     my $file = shift;
 
     my $parser = Test::Synopsis::Parser->new;
-    $parser->parse_from_file ($file);
-
-  for my $entry (values %{$parser->{'test_synopsis_text'}}) {
-    for my $sectionhash (values %{$entry}) {
-      for my $section_text ( values %{$sectionhash}) {
-
-        # don't want __END__ blocks in SYNOPSIS chopping our '}' in wrapper sub
-        # same goes for __DATA__ and although we'll be sticking an extra '}'
-        # into its contents; it shouldn't matter since the code shouldn't be
-        # run anyways.
-        $section_text =~ s/(?=(?:__END__|__DATA__)\s*$)/}\n/m;
-
-        # trim indent whitespace to make HEREDOCs work properly
-        # we'll assume the indent of the first line is the proper indent
-        # to use for the whole block
-        $section_text =~ s/(\A(\s+).+)/ (my $x = $1) =~ s{^$2}{}gm; $x /se;
-      }
-    }
-  }
-
-    # Correct the reported line number of the error, depending on what
-    # =for options we were supplied with.
-    my $options_lines = join '', @{ $parser->{'test_synopsis_options'} };
-    $options_lines = $options_lines =~ tr/\n/\n/;
-
-    return (
-      $parser->{'test_synopsis_text'},
-      ($parser->{'test_synopsis_linenum'} || 0) - ($options_lines || 0),
-      @{ $parser->{'test_synopsis_options'} }
-    );
+    $parser->parse_file($file);
+    $parser->{tsyn_blocks}
 }
 
 package
   Test::Synopsis::Parser; # on new line to avoid indexing
 
-### Parser patch by Kevin Ryde
+use parent 'Pod::Simple';
 
-use base 'Pod::Parser';
-sub new {
-    my $class = shift;
-    my $self =  $class->SUPER::new(
-      @_,
-    within_begin => '',
-    test_synopsis_options => [],
-    test_synopsis_section => {},
-    test_synopsis_sequence => 1,
-    test_synopsis_current_file => '',
-    test_synopsis_text => {},
-    );
-  return $self;
+sub new
+{
+    my $self = shift->SUPER::new(@_);
+    $self->accept_targets('test_synopsis');
+    $self->merge_text(1);
+    $self->no_errata_section(1);
+    $self->strip_verbatim_indent(sub {
+        my $lines = shift;
+        my ($indent) = $lines->[0] =~ /^(\s*)/;
+        $indent
+    });
+
+    $self->{tsyn_stack} = [];
+    $self->{tsyn_options} = [];
+    $self->{tsyn_blocks} = [];
+    $self->{tsyn_in_synopsis} = '';
+
+    $self
 }
 
-sub command {
-    my $self = shift;
-    my ($command, $text) = @_;
+sub _handle_element_start
+{
+    my ($self, $element_name, $attrs) = @_;
 
-    if ($command eq 'for') {
-        if ($text =~ /^test_synopsis\s+(.*)/s) {
-            push @{$self->{'test_synopsis_options'}}, $1;
+    #Test::More::note Test::More::explain($element_name);
+    #Test::More::note Test::More::explain($attrs);
+    push @{$self->{tsyn_stack}}, [ $element_name, $attrs ];
+}
+
+sub _handle_element_end
+{
+    return unless $_[0]->{tsyn_stack};
+    pop @{ $_[0]->{tsyn_stack} };
+}
+
+sub _handle_text
+{
+    return unless $_[0]->{tsyn_stack};
+    my ($self, $text) = @_;
+    my $elt = $self->{tsyn_stack}[-1][0];
+    if ($elt eq 'head1') {
+        if ($self->{tsyn_in_synopsis}) {
+            # Exiting SYNOPSIS => Skip everything to the end
+            delete $self->{tsyn_stack};
         }
-    } elsif ($command eq 'begin') {
-        $self->{'within_begin'} = $text;
-    } elsif ($command eq 'end') {
-        $self->{'within_begin'} = '';
-    } elsif ($command eq 'pod') {
-        # resuming pod, retain begin/end/synopsis state
-    } else {
-        # Synopsis is "=head1 SYNOPSIS" through to next command other than
-        # the above "=for", "=begin", "=end", "=pod".  This means
-        #     * "=for" directives for other programs are skipped
-        #       (eg. HTML::Scrubber)
-        #     * "=begin" to "=end" for other program are skipped
-        #       (eg. Date::Simple)
-        #     * "=cut" to "=pod" actual code is skipped (perhaps unlikely in
-        #       practice)
-        #
-        # Could think about not stopping at "=head2" etc subsections of a
-        # synopsis, but a synopsis with subsections usually means different
-        # sample bits meant for different places and so probably won't
-        # actually run.
-        #
-        $self->{'within_synopsis'}
-          = ($command eq 'head1' && $text =~ /^SYNOPSIS\s*$/);
+        $self->{tsyn_in_synopsis} = $text =~ /SYNOPSIS\s*$/;
+    } elsif ($elt eq 'Data') {
+        # use Test::More; Test::More::note "XXX";
+        my $up = $self->{tsyn_stack}[-2];
+        if ($up->[0] eq 'for' && $up->[1]->{target} eq 'test_synopsis') {
+            my $line = $up->[1]{start_line};
+            my $file = $self->source_filename;
+            push @{$self->{tsyn_options}}, qq<#line $line "$file"\n$text\n>;
+        }
+    } elsif ($elt eq 'Verbatim' && $self->{tsyn_in_synopsis}) {
+        my $line = $self->{tsyn_stack}[-1][1]{start_line};
+        push @{ $self->{tsyn_blocks} }, [
+            $line,
+            $text,
+            $self->{tsyn_options},
+        ];
+        $self->{tsyn_options} = [];
     }
-    return '';
 }
 
-sub verbatim {
-    my ( $self, $text, $linenum ) = @_;
-
-  ## If we are in a new file, adjust some things.
-  if ($self->{_INFILE} ne $self->{test_synopsis_current_file}) {
-    $self->{test_synopsis_current_file} = $self->{_INFILE};
-    $self->{test_synopsis_section}{$self->{_INFILE}} = 0;
-    $self->{test_synopsis_blocknumber} = 1;
-    $self->{test_synopsis_oldblocknumber} = 0;
-  }
-
-  ## If we are starting a new section, adjust some things.
-  if ($self->{test_synopsis_blocknumber} != $self->{test_synopsis_oldblocknumber}) {
-    $self->{test_synopsis_oldblocknumber} = $self->{test_synopsis_blocknumber};
-    $self->{test_synopsis_section}{$self->{_INFILE}}++;
-  }
-
-    if ( $self->{'within_begin'} =~ /^test_synopsis\b/ ) {
-        push @{$self->{'test_synopsis_options'}}, $text;
-
-    } elsif ( $self->{'within_synopsis'} && ! $self->{'within_begin'} ) {
-        $self->{'test_synopsis_linenum'} = $linenum; # first occurance
-    $self->{test_synopsis_text}{
-      ## Maintain same order on checking as was read in:
-      $self->{test_synopsis_sequence}
-    }{
-      ## Current file we are parsing:
-      $self->{_INFILE}
-    }{
-      ## What section of the current file we are in:
-      $self->{test_synopsis_section}{$self->{_INFILE}}
-    } .= $text;
-    }
-    return '';
-}
-sub textblock {
-    # ignore text paragraphs, only take "verbatim" blocks to be code
-  my $self = shift;
-  $self->{test_synopsis_blocknumber}++;
-    return '';
-}
 
 1;
 __END__
 
 =encoding utf-8
-
-=for Pod::Coverage extract_synopsis
 
 =for stopwords Goro blogged Znet Zoffix DOHERTY Doherty
   KRYDE Ryde ZOFFIX Gr nauer Grünauer pm HEREDOC HEREDOCs
@@ -416,6 +362,8 @@ Zoffix Znet <cpan (at) zoffix.com>
 =item * Greg Sabino Mullane (L<TURNSTEP|https://metacpan.org/author/TURNSTEP>)
 
 =item * Zoffix Znet (L<ZOFFIX|https://metacpan.org/author/ZOFFIX>)
+
+=item * Olivier Mengué (L<DOLMEN|https://metacpan.org/author/DOLMEN>)
 
 =back
 
