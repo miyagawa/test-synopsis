@@ -183,6 +183,7 @@ Zoffix Znet &lt;cpan (at) zoffix.com>
 - Patrice Clement ([monsieurp](https://github.com/monsieurp))
 - Greg Sabino Mullane ([TURNSTEP](https://metacpan.org/author/TURNSTEP))
 - Zoffix Znet ([ZOFFIX](https://metacpan.org/author/ZOFFIX))
+- Olivier Mengué ([DOLMEN](https://metacpan.org/author/DOLMEN))
 
 # LICENSE
 
