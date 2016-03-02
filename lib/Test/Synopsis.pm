@@ -92,6 +92,7 @@ sub _extract_synopsis
 package
   Test::Synopsis::Parser; # on new line to avoid indexing
 
+use Pod::Simple 3.09;
 use parent 'Pod::Simple';
 
 sub new
