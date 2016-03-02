@@ -167,7 +167,7 @@ __END__
 =encoding utf-8
 
 =for stopwords Goro blogged Znet Zoffix DOHERTY Doherty
-  KRYDE Ryde ZOFFIX Gr nauer Grünauer pm HEREDOC HEREDOCs
+  KRYDE Ryde ZOFFIX Gr nauer Grünauer pm HEREDOC HEREDOCs DROLSKY
 
 =for test_synopsis $main::for_checked=1
 
@@ -351,6 +351,8 @@ Zoffix Znet <cpan (at) zoffix.com>
 =head1 CONTRIBUTORS
 
 =over 4
+
+=item * Dave Rolsky (L<DROLSKY|https://metacpan.org/author/DROLSKY>)
 
 =item * Kevin Ryde (L<KRYDE|https://metacpan.org/author/KRYDE>)
 
