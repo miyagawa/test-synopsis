@@ -1,5 +1,9 @@
 Revision history for Perl extension Test::Synopsis
 
+0.15  2016-03-02
+        - Specify Pod::Simple version to prereq, as needed
+          feature missing from older versions (by autarch)        
+
 0.14  2016-02-16
         - Complete rewrite by dolmen
         [BREAKING CHANGES]
