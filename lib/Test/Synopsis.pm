@@ -168,6 +168,7 @@ __END__
 
 =for stopwords Goro blogged Znet Zoffix DOHERTY Doherty
   KRYDE Ryde ZOFFIX Gr nauer Grünauer pm HEREDOC HEREDOCs DROLSKY
+  Mengué
 
 =for test_synopsis $main::for_checked=1
 
