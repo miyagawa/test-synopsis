@@ -382,6 +382,6 @@ This library is Copyright (c) Tatsuhiko Miyagawa
 
 =head1 SEE ALSO
 
-L<Test::Pod>, L<Test::UseAllModules>, L<Test::Inline>
+L<Test::Pod>, L<Test::UseAllModules>, L<Test::Inline>, L<Test::Synopsis::Expectation>
 
 =cut
